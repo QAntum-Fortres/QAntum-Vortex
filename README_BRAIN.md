@@ -426,6 +426,24 @@ class EvolutionaryHardening {
 
 ---
 
+### 7. HealingStrategyPredictor - Neural Inference Engine
+
+**Location**: `src/ml/HealingStrategyPredictor.ts`
+
+**Purpose**: Probabilistic ML model that learns optimal healing strategies from historical data.
+
+**Algorithm**:
+- Contextual Naive Bayes variant
+- Learns `P(Success | Strategy, Domain, ErrorPattern)`
+- Adapts to new failure modes automatically
+
+**Training**:
+- Loads `healing_history.json` (synthetic/real data)
+- Vectorizes error messages into context keys (e.g., `LOGIC::SYNTAX`, `NETWORK::TIMEOUT`)
+- Updates confidence scores in real-time
+
+---
+
 ## 🔐 Security Architecture
 
 ### Three Critical Vulnerabilities - ALL FIXED
@@ -721,7 +739,7 @@ npm run hive-mind-awakening
 - [ ] **Key Rotation**: Implement 90-day automatic key rotation with grace periods
 - [ ] **Database Healing**: Expand healing domain to include schema migrations
 - [ ] **Distributed Apoptosis**: Multi-node entropy synchronization
-- [ ] **Machine Learning**: Train healing strategies on historical data
+- [x] **Machine Learning**: Train healing strategies on historical data
 - [ ] **Real-Time Dashboard**: WebSocket-based live metrics visualization
 
 ### Phase 6: Scale & Performance
