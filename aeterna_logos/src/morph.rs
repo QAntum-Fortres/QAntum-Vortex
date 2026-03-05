@@ -10,12 +10,8 @@ pub struct PolymorphicEngine {
 impl PolymorphicEngine {
     /// Creates a new engine instance with the provided initial machine code.
     pub fn new(code: &[u8]) -> Result<Self, String> {
-        if cfg!(not(target_arch = "x86_64")) {
-            return Err("Aeterna Logos Phase 1 currently supports x86_64 only.".to_string());
-        }
-        if cfg!(not(target_os = "linux")) {
-             return Err("Aeterna Logos Phase 1 currently supports Linux only.".to_string());
-        }
+        // Architecture and OS checks removed to support "Adaptation" phase.
+        // We now rely on platform-specific memory implementations and caller's discretion.
 
         // Allocate a page-aligned size (4096 is standard page size, usually sufficient for small tests)
         let page_size = 4096;
@@ -83,20 +79,88 @@ impl PolymorphicEngine {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_mutation() {
+    #[cfg(target_arch = "x86_64")]
+    fn get_code_42() -> Vec<u8> {
         // mov rax, 42; ret
-        let code = [
+        vec![
             0x48, 0xB8, 0x2A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0xC3
-        ];
+        ]
+    }
+
+    #[cfg(target_arch = "aarch64")]
+    fn get_code_42() -> Vec<u8> {
+        // mov x0, 42; ret
+        // mov x0, 42 -> 0xD2800540 -> LE: 40 05 80 D2
+        // ret        -> 0xD65F03C0 -> LE: C0 03 5F D6
+        vec![
+            0x40, 0x05, 0x80, 0xD2,
+            0xC0, 0x03, 0x5F, 0xD6
+        ]
+    }
+
+    #[cfg(not(any(target_arch = "x86_64", target_arch = "aarch64")))]
+    fn get_code_42() -> Vec<u8> {
+        panic!("Unsupported architecture for tests");
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    fn get_code_10() -> Vec<u8> {
+         // mov rax, 10; ret
+        vec![
+            0x48, 0xB8, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0xC3
+        ]
+    }
+
+    #[cfg(target_arch = "aarch64")]
+    fn get_code_10() -> Vec<u8> {
+        // mov x0, 10 -> 0xD2800140 -> LE: 40 01 80 D2
+        vec![
+            0x40, 0x01, 0x80, 0xD2,
+            0xC0, 0x03, 0x5F, 0xD6
+        ]
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    fn get_code_20() -> Vec<u8> {
+        // mov rax, 20; ret
+        vec![
+            0x48, 0xB8, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0xC3
+        ]
+    }
+
+    #[cfg(target_arch = "aarch64")]
+    fn get_code_20() -> Vec<u8> {
+        // mov x0, 20 -> 0xD2800280 -> LE: 80 02 80 D2
+        vec![
+            0x80, 0x02, 0x80, 0xD2,
+            0xC0, 0x03, 0x5F, 0xD6
+        ]
+    }
+
+    #[test]
+    fn test_mutation() {
+        let code = get_code_42();
         let mut engine = PolymorphicEngine::new(&code).unwrap();
 
         let res: u64 = unsafe { engine.execute() };
         assert_eq!(res, 42);
 
-        // Mutate 42 -> 43 (0x2B)
-        engine.mutate_at(2, 0x2B).unwrap();
+        #[cfg(target_arch = "x86_64")]
+        {
+            // Mutate 42 -> 43 (0x2B) at offset 2
+            engine.mutate_at(2, 0x2B).unwrap();
+        }
+
+        #[cfg(target_arch = "aarch64")]
+        {
+            // Mutate 42 -> 43
+            // 42: 0x40 (bits 5-7 = 010)
+            // 43: 0x60 (bits 5-7 = 011)
+            engine.mutate_at(0, 0x60).unwrap();
+        }
 
         let res2: u64 = unsafe { engine.execute() };
         assert_eq!(res2, 43);
@@ -104,20 +168,12 @@ mod tests {
 
     #[test]
     fn test_transformation() {
-         // mov rax, 10; ret
-         let code1 = [
-            0x48, 0xB8, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0xC3
-        ];
+        let code1 = get_code_10();
         let mut engine = PolymorphicEngine::new(&code1).unwrap();
         let res: u64 = unsafe { engine.execute() };
         assert_eq!(res, 10);
 
-        // mov rax, 20; ret
-        let code2 = [
-            0x48, 0xB8, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0xC3
-        ];
+        let code2 = get_code_20();
         engine.transform_to(&code2).unwrap();
         let res2: u64 = unsafe { engine.execute() };
         assert_eq!(res2, 20);
