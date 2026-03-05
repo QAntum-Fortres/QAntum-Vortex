@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vortex Genesis | Autonomous Bio-Digital Organism</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js for visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="particles"></div>
+
+    <div class="container">
+        <!-- ASCII Art Logo -->
+        <div class="ascii-art">
+██   ██╗ ██████╗ ██████╗ ████████╗███████╗██╗  ██╗
+██║   ██║██╔═══██╗██╔══██╗╚══██╔══╝██╔════╝╚██╗██╔╝
+██║   ██║██║   ██║██████╔╝   ██║   █████╗   ╚███╔╝
+╚██╗ ██╔╝██║   ██║██╔══██╗   ██║   ██╔══╝   ██╔██╗
+ ╚████╔╝ ╚██████╔╝██║  ██║   ██║   ███████╗██╔╝ ██╗
+  ╚═══╝   ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
+GENESIS SYSTEM INTERFACE v37.0.0
+        </div>
+
+        <div class="hero-tagline">
+            VERIFIED. CONSOLIDATED. SOVEREIGN.
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="dashboard-grid">
+            <!-- System Health -->
+            <div class="card fade-in">
+                <div class="card-header">
+                    <span>System Status</span>
+                    <i class="status-indicator healthy" id="health-indicator"></i>
+                </div>
+                <div class="card-value" id="system-health">INITIALIZING...</div>
+                <div class="card-label">Vortex Healing Nexus</div>
+            </div>
+
+            <!-- Active Modules -->
+            <div class="card fade-in">
+                <div class="card-header">
+                    <span>Active Modules</span>
+                    <span>🧩</span>
+                </div>
+                <div class="card-value" id="active-modules">0</div>
+                <div class="card-label">Entropy: <span id="entropy-score">0.00</span></div>
+            </div>
+
+            <!-- Consensus Rate -->
+            <div class="card fade-in">
+                <div class="card-header">
+                    <span>Consensus Rate</span>
+                    <span>⚖️</span>
+                </div>
+                <div class="card-value" id="consensus-rate">0.0%</div>
+                <div class="card-label">Adversarial Protocol</div>
+            </div>
+
+            <!-- Liveness Tokens -->
+            <div class="card fade-in">
+                <div class="card-header">
+                    <span>Liveness Tokens</span>
+                    <span>🔐</span>
+                </div>
+                <div class="card-value" id="liveness-tokens">0</div>
+                <div class="card-label">Issued / Validated</div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="dashboard-grid">
+            <div class="card full-width fade-in" style="grid-column: span 2;">
+                <div class="card-header">
+                    <span>Healing Operations Stream</span>
+                    <span class="pulse">● LIVE</span>
+                </div>
+                <canvas id="healingChart" height="100"></canvas>
+            </div>
+
+            <div class="card fade-in">
+                <div class="card-header">
+                    <span>Vitality Distribution</span>
+                </div>
+                <canvas id="vitalityChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Security Matrix -->
+        <div class="card full-width fade-in" style="margin-top: 2rem;">
+            <div class="card-header">
+                <span>Security Threat Matrix</span>
+                <span>🛡️ ACTIVE PROTECTION</span>
+            </div>
+            <div class="matrix-grid">
+                <div class="matrix-item">
+                    <div class="matrix-icon">🔑</div>
+                    <div>Forged Tokens</div>
+                    <div class="badge protected">HMAC-SHA256</div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon">⏳</div>
+                    <div>Replay Attacks</div>
+                    <div class="badge protected">5-MIN WINDOW</div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon">🆔</div>
+                    <div>ID Spoofing</div>
+                    <div class="badge protected">STRICT MATCH</div>
+                </div>
+                <div class="matrix-item">
+                    <div class="matrix-icon">⏰</div>
+                    <div>Clock Skew</div>
+                    <div class="badge protected">FUTURE BLOCK</div>
+                </div>
+            </div>
+            <div id="security-log" style="margin-top: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--danger); min-height: 1.2em;">
+                <!-- Security logs appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div>
+            <span class="status-indicator healthy pulse"></span>
+            CONNECTED TO HIVE MIND
+        </div>
+        <div id="uptime">UPTIME: 00:00:00</div>
+        <div>v37.0.0-GENESIS</div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
