@@ -6,17 +6,41 @@ use morph::PolymorphicEngine;
 fn main() -> Result<(), String> {
     println!("🌌 Aeterna Logos: Initializing Phase 1 (Polymorphic Engine)...");
 
-    // 1. Define initial machine code (x86_64)
-    // Function: fn() -> u64 { return 42; }
-    // Assembly:
-    //   mov rax, 42  (0x48, 0xB8, 0x2A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00)
-    //   ret          (0xC3)
-    let initial_code: [u8; 11] = [
-        0x48, 0xB8, 0x2A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, 42
-        0xC3,                                                       // ret
-    ];
+    #[cfg(target_arch = "x86_64")]
+    let (initial_code, mutation_plan) = {
+        // x86_64: mov rax, 42; ret
+        let code: Vec<u8> = vec![
+            0x48, 0xB8, 0x2A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // mov rax, 42
+            0xC3,                                                       // ret
+        ];
+        // Mutation: 42 (0x2A) -> 1337 (0x0539)
+        // Offset 2: 0x2A -> 0x39
+        // Offset 3: 0x00 -> 0x05
+        let plan = vec![(2, 0x39), (3, 0x05)];
+        (code, plan)
+    };
 
-    // 2. Load code into the engine (Allocates RW memory, writes code, protects as RX)
+    #[cfg(target_arch = "aarch64")]
+    let (initial_code, mutation_plan) = {
+        // AArch64: mov x0, 42; ret
+        // mov x0, 42 -> 0xD2800540 -> LE: 40 05 80 D2
+        let code: Vec<u8> = vec![
+            0x40, 0x05, 0x80, 0xD2,
+            0xC0, 0x03, 0x5F, 0xD6  // ret
+        ];
+        // Mutation: 42 -> 1337
+        // Byte 0: 0x40 -> 0x20
+        // Byte 1: 0x05 -> 0xA7
+        let plan = vec![(0, 0x20), (1, 0xA7)];
+        (code, plan)
+    };
+
+    #[cfg(not(any(target_arch = "x86_64", target_arch = "aarch64")))]
+    let (initial_code, mutation_plan): (Vec<u8>, Vec<(usize, u8)>) = {
+        panic!("Unsupported architecture.");
+    };
+
+    // 2. Load code into the engine
     let mut organism = PolymorphicEngine::new(&initial_code)?;
     println!("[+] Organism born.");
 
@@ -31,14 +55,9 @@ fn main() -> Result<(), String> {
     // 4. Mutate (Self-Evolution)
     println!("[*] Triggering mutation event...");
 
-    // We want to change '42' (0x2A) to '1337' (0x539).
-    // The immediate value starts at index 2.
-    // 1337 in hex is 0x0539. Little endian: 39 05.
-
-    // Mutate byte at offset 2 to 0x39
-    organism.mutate_at(2, 0x39)?;
-    // Mutate byte at offset 3 to 0x05
-    organism.mutate_at(3, 0x05)?;
+    for (offset, new_byte) in mutation_plan {
+        organism.mutate_at(offset, new_byte)?;
+    }
 
     // 5. Execute Generation 2
     let result_gen2: u64 = unsafe { organism.execute() };
